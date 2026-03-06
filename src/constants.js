@@ -18,6 +18,10 @@ export const MIHONG_GOLD_CODES = ['SJC', '999']
 export const STORAGE_KEY = 'gold_transactions'
 export const PRICE_REFRESH_INTERVAL_MS = 60000
 
+/** Google Apps Script Web App URL (read/write Google Sheet) */
+export const SHEETS_API_URL =
+  'https://script.google.com/macros/s/AKfycbzPWngdu72Q2Ge2xHRNZUmQlszrc3smRI0qEeiti7FqCNGt9ibsaqpTgTGiB7QvFgLj3g/exec'
+
 export function getMultiplierForGoldType(goldType) {
   const found = GOLD_TYPES.find((t) => t.value === goldType)
   return found ? found.multiplier : 1

@@ -1,52 +1,17 @@
-import React, { createContext, useContext, useReducer } from 'react'
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import { STORAGE_KEY } from '../constants'
-import { getSeedTransactions } from '../data/seed'
+import * as sheetsApi from '../api/sheets'
 
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) {
-      const seed = getSeedTransactions()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seed))
-      return seed
-    }
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      const seed = getSeedTransactions()
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(seed))
-      return seed
-    }
-    return parsed
-  } catch {
-    return getSeedTransactions()
-  }
-}
-
-function saveToStorage(list) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
-  } catch (e) {
-    console.warn('Failed to save transactions', e)
-  }
-}
+const initialState = []
 
 function transactionReducer(state, action) {
   switch (action.type) {
-    case 'LOAD':
-      return loadFromStorage()
+    case 'SET':
+      return action.payload ?? []
     case 'ADD':
-      const newTx = {
-        ...action.payload,
-        id: action.payload.id || uuidv4(),
-      }
-      const next = [newTx, ...state]
-      saveToStorage(next)
-      return next
+      return [action.payload, ...state]
     case 'DELETE':
-      const filtered = state.filter((t) => t.id !== action.payload.id)
-      saveToStorage(filtered)
-      return filtered
+      return state.filter((t) => t.id !== action.payload.id)
     default:
       return state
   }
@@ -55,13 +20,54 @@ function transactionReducer(state, action) {
 const TransactionContext = createContext(null)
 
 export function TransactionProvider({ children }) {
-  const [transactions, dispatch] = useReducer(transactionReducer, undefined, loadFromStorage)
+  const [transactions, dispatch] = useReducer(transactionReducer, initialState)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState(null)
 
-  const addTransaction = (payload) => dispatch({ type: 'ADD', payload })
-  const deleteTransaction = (id) => dispatch({ type: 'DELETE', payload: { id } })
+  const loadTransactions = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const list = await sheetsApi.getTransactions()
+      dispatch({ type: 'SET', payload: list })
+    } catch (e) {
+      setError(e.message)
+      dispatch({ type: 'SET', payload: [] })
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadTransactions()
+  }, [loadTransactions])
+
+  const addTransaction = useCallback(async (payload) => {
+    const tx = {
+      ...payload,
+      id: payload.id || uuidv4(),
+    }
+    await sheetsApi.addTransaction(tx)
+    dispatch({ type: 'ADD', payload: tx })
+    return tx
+  }, [])
+
+  const deleteTransaction = useCallback(async (id) => {
+    await sheetsApi.deleteTransaction(id)
+    dispatch({ type: 'DELETE', payload: { id } })
+  }, [])
+
+  const value = {
+    transactions,
+    loading,
+    error,
+    addTransaction,
+    deleteTransaction,
+    refresh: loadTransactions,
+  }
 
   return (
-    <TransactionContext.Provider value={{ transactions, addTransaction, deleteTransaction, dispatch }}>
+    <TransactionContext.Provider value={value}>
       {children}
     </TransactionContext.Provider>
   )

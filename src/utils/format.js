@@ -46,3 +46,17 @@ export function formatDate(isoDate) {
     year: 'numeric',
   })
 }
+
+/**
+ * Format date short (dd/mm/YY)
+ */
+export function formatDateShort(isoDate) {
+  if (!isoDate) return '—'
+  const d = new Date(isoDate)
+  if (Number.isNaN(d.getTime())) return isoDate
+  return d.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  })
+}

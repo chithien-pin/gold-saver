@@ -15,6 +15,8 @@ export default function AddTransaction() {
   const { addTransaction } = useTransactions()
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
+  const [submitting, setSubmitting] = useState(false)
+  const [apiError, setApiError] = useState(null)
 
   function validate() {
     const e = {}
@@ -39,29 +41,45 @@ export default function AddTransaction() {
     handleChange('pricePerChi', digits ? parseInt(digits, 10).toLocaleString('vi-VN') : '')
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
+    setApiError(null)
     if (!validate()) return
-    const priceNum = Number(String(form.pricePerChi).replace(/\D/g, ''))
-    addTransaction({
-      goldType: form.goldType,
-      type: form.type,
-      quantity: Number(form.quantity),
-      pricePerChi: priceNum,
-      date: form.date,
-      note: form.note.trim() || undefined,
-    })
-    setForm({ ...initialForm, date: new Date().toISOString().slice(0, 10) })
-    setErrors({})
+    setSubmitting(true)
+    try {
+      const priceNum = Number(String(form.pricePerChi).replace(/\D/g, ''))
+      await addTransaction({
+        goldType: form.goldType,
+        type: form.type,
+        quantity: Number(form.quantity),
+        pricePerChi: priceNum,
+        date: form.date,
+        note: form.note.trim() || undefined,
+      })
+      setForm({ ...initialForm, date: new Date().toISOString().slice(0, 10) })
+      setErrors({})
+    } catch (err) {
+      setApiError(err.message || 'Không thể lưu. Kiểm tra kết nối hoặc quyền Sheet.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
-    <div className="animate-fade-in max-w-2xl">
-      <section className="rounded-xl bg-white border border-gray-200 shadow-card p-6 md:p-8">
-        <h2 className="font-display text-xl font-semibold text-gold-dark mb-6">
-          Nhập Giao Dịch
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
+    <div className="max-w-2xl">
+      <section className="rounded-card bg-white shadow-soft overflow-hidden">
+        <div className="flex items-center gap-4 px-6 py-4 border-b border-gray-100">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Nhập Giao Dịch</h2>
+            <p className="text-sm text-gray-500">Thêm giao dịch mua hoặc bán vàng vào danh mục</p>
+          </div>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">
               Loại vàng <span className="text-red-400">*</span>
@@ -69,7 +87,7 @@ export default function AddTransaction() {
             <select
               value={form.goldType}
               onChange={(e) => handleChange('goldType', e.target.value)}
-              className="w-full rounded-lg bg-gray-50 border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 outline-none transition"
+              className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
             >
               {GOLD_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>
@@ -94,7 +112,7 @@ export default function AddTransaction() {
                   value="buy"
                   checked={form.type === 'buy'}
                   onChange={() => handleChange('type', 'buy')}
-                  className="text-gold focus:ring-gold"
+                  className="text-primary focus:ring-primary"
                 />
                 <span className="text-gray-900">Mua</span>
               </label>
@@ -105,7 +123,7 @@ export default function AddTransaction() {
                   value="sell"
                   checked={form.type === 'sell'}
                   onChange={() => handleChange('type', 'sell')}
-                  className="text-gold focus:ring-gold"
+                  className="text-primary focus:ring-primary"
                 />
                 <span className="text-gray-900">Bán</span>
               </label>
@@ -123,7 +141,7 @@ export default function AddTransaction() {
                 min="0.1"
                 value={form.quantity}
                 onChange={(e) => handleChange('quantity', e.target.value)}
-                className="w-full rounded-lg bg-gray-50 border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 outline-none transition"
+                className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
                 placeholder="0.0"
               />
               {errors.quantity && (
@@ -138,8 +156,8 @@ export default function AddTransaction() {
                 type="text"
                 value={form.pricePerChi}
                 onChange={(e) => handlePriceInput(e.target.value)}
-                className="w-full rounded-lg bg-gray-50 border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 outline-none transition"
-                placeholder="85.000.000"
+                className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
+                placeholder="18.820.000"
               />
               {errors.pricePerChi && (
                 <p className="mt-1 text-sm text-red-400">{errors.pricePerChi}</p>
@@ -155,7 +173,7 @@ export default function AddTransaction() {
               type="date"
               value={form.date}
               onChange={(e) => handleChange('date', e.target.value)}
-              className="w-full rounded-lg bg-gray-50 border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 outline-none transition"
+              className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
             />
             {errors.date && (
               <p className="mt-1 text-sm text-red-400">{errors.date}</p>
@@ -170,16 +188,21 @@ export default function AddTransaction() {
               type="text"
               value={form.note}
               onChange={(e) => handleChange('note', e.target.value)}
-              className="w-full rounded-lg bg-gray-50 border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-gold/50 focus:ring-1 focus:ring-gold/30 outline-none transition"
+              className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
               placeholder="Tùy chọn"
             />
           </div>
 
+          {apiError && (
+            <p className="text-sm text-red-600 bg-red-50 px-4 py-2.5 rounded-xl">{apiError}</p>
+          )}
+
           <button
             type="submit"
-            className="w-full sm:w-auto px-8 py-3 rounded-lg bg-gold text-gray-900 font-semibold hover:bg-gold-light transition-colors shadow-gold-sm"
+            disabled={submitting}
+            className="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors shadow-soft disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Thêm Giao Dịch
+            {submitting ? 'Đang lưu…' : 'Thêm Giao Dịch'}
           </button>
         </form>
       </section>

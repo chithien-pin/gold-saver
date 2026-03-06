@@ -7,11 +7,10 @@
     @apply antialiased;
   }
   body {
-    @apply bg-gray-50 text-gray-900 font-sans min-h-screen;
+    @apply bg-surface text-gray-900 font-sans min-h-screen;
   }
 }
 
-/* Custom scrollbar for luxury feel */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -23,5 +22,5 @@
   @apply bg-gray-300 rounded-full;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gold/50;
+  @apply bg-primary/50;
 }

@@ -7,15 +7,25 @@ export default {
   theme: {
     extend: {
       colors: {
-        gold: {
-          DEFAULT: '#D4AF37',
-          light: '#F5C842',
-          dark: '#B8960C',
+        primary: {
+          DEFAULT: '#3182e1',
+          light: '#4d94e8',
+          dark: '#286fc9',
         },
+        accent: {
+          DEFAULT: '#51b206',
+          light: '#65c90a',
+          dark: '#429005',
+        },
+        surface: '#F8F9FB',
+      },
+      borderRadius: {
+        'card': '12px',
+        'panel': '16px',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Roboto', 'system-ui', 'sans-serif'],
+        sans: ['Urbanist', 'system-ui', 'sans-serif'],
+        display: ['Urbanist', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out',
@@ -33,9 +43,10 @@ export default {
         },
       },
       boxShadow: {
-        'gold-sm': '0 0 0 1px rgba(212, 175, 55, 0.25)',
-        'gold': '0 0 20px rgba(212, 175, 55, 0.2)',
-        'card': '0 1px 3px rgba(0, 0, 0, 0.08)',
+        'card': '0 1px 3px rgba(0, 0, 0, 0.06)',
+        'soft': '0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)',
+        'soft-lg': '0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05)',
+        'primary': '0 0 0 1px rgba(49, 130, 225, 0.2)',
       },
     },
   },
