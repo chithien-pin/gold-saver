@@ -23,7 +23,7 @@ export default function Dashboard() {
               Giá vàng (Mihong)
             </h2>
             <p className="text-sm text-gray-500">
-              Cập nhật lúc: {lastUpdated ? lastUpdated.toLocaleTimeString('vi-VN') : '—'}
+              Cập nhật lúc: {lastUpdated ? lastUpdated.toLocaleTimeString('vi-VN') + ' ' + lastUpdated.toLocaleDateString('vi-VN') : '—'}
             </p>
           </div>
           <button

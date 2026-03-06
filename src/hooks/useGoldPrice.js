@@ -23,9 +23,16 @@ function parseLatestDateTime(data) {
   const latest = data[data.length - 1]
   const dt = latest?.dateTime
   if (!dt) return null
-  const [d, t] = String(dt).split(' ')
+  const [d, t] = String(dt).trim().split(/\s+/)
   const [day, month, year] = (d || '').split('/')
-  if (day && month && year) return new Date(+year, +month - 1, +day, 0, 0, 0)
+  let hour = 0
+  let minute = 0
+  if (t) {
+    const [h, m] = t.split(':')
+    if (h != null) hour = parseInt(h, 10) || 0
+    if (m != null) minute = parseInt(m, 10) || 0
+  }
+  if (day && month && year) return new Date(+year, +month - 1, +day, hour, minute, 0)
   return new Date()
 }
 
