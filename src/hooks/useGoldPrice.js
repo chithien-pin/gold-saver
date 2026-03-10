@@ -10,12 +10,13 @@ const MIHONG_HEADERS = {
 }
 
 /** API Mihong trả về giá theo chỉ (VNĐ/chỉ) — dùng trực tiếp, không chia 10 */
-function parseLatestPricePerChi(data) {
-  if (!Array.isArray(data) || data.length === 0) return null
+function parseLatestPricesPerChi(data) {
+  if (!Array.isArray(data) || data.length === 0) return { buy: null, sell: null }
   const latest = data[data.length - 1]
-  const buying = latest?.buyingPrice
-  if (buying == null) return null
-  return buying
+  return {
+    buy: latest?.buyingPrice ?? null,
+    sell: latest?.sellingPrice ?? null,
+  }
 }
 
 function parseLatestDateTime(data) {
@@ -38,6 +39,7 @@ function parseLatestDateTime(data) {
 
 export function useGoldPrice() {
   const [pricesByCode, setPricesByCode] = useState({})
+  const [pricesByCodeSell, setPricesByCodeSell] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
@@ -45,7 +47,8 @@ export function useGoldPrice() {
   const fetchPrice = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const next = {}
+    const nextBuy = {}
+    const nextSell = {}
     let latestDate = null
     try {
       for (const code of MIHONG_GOLD_CODES) {
@@ -55,12 +58,14 @@ export function useGoldPrice() {
         const data = await res.json()
         if (data?.success === false) throw new Error(data?.messages?.[0] || 'API error')
         const arr = Array.isArray(data) ? data : data?.data
-        const perChi = parseLatestPricePerChi(arr)
-        if (perChi != null) next[code] = perChi
+        const { buy, sell } = parseLatestPricesPerChi(arr)
+        if (buy != null) nextBuy[code] = buy
+        if (sell != null) nextSell[code] = sell
         const dt = parseLatestDateTime(arr)
         if (dt && (!latestDate || dt > latestDate)) latestDate = dt
       }
-      setPricesByCode(next)
+      setPricesByCode(nextBuy)
+      setPricesByCodeSell(nextSell)
       setLastUpdated(latestDate || new Date())
     } catch (e) {
       setError(e.message)
@@ -81,6 +86,7 @@ export function useGoldPrice() {
   return {
     spotVndPerChi,
     pricesByCode,
+    pricesByCodeSell,
     loading,
     error,
     lastUpdated,

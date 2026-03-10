@@ -16,3 +16,17 @@ export function getPricePerChiForType(spotVndPerChi, goldType, pricesByCode = nu
   const mult = getMultiplierForGoldType(goldType)
   return (spotVndPerChi || 0) * mult
 }
+
+/**
+ * Get current sell price per chỉ in VNĐ for a gold type.
+ * Uses pricesByCodeSell from Mihong when available, else fallback to spot × multiplier.
+ */
+export function getSellPricePerChiForType(spotVndPerChi, goldType, pricesByCodeSell = null) {
+  if (pricesByCodeSell) {
+    if (goldType === 'SJC' && pricesByCodeSell.SJC != null) return pricesByCodeSell.SJC
+    if ((goldType === '999' || goldType === '9999' || goldType === 'KimCuongVang' || goldType === 'Khac') && pricesByCodeSell['999'] != null)
+      return pricesByCodeSell['999']
+  }
+  const mult = getMultiplierForGoldType(goldType)
+  return (spotVndPerChi || 0) * mult
+}

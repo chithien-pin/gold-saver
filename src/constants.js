@@ -1,13 +1,7 @@
 /** Gold type options for forms and display */
 export const GOLD_TYPES = [
   { value: 'SJC', label: 'SJC', multiplier: 1.08 },
-  { value: '999', label: 'Vàng 999 (24K)', multiplier: 1 },
-  { value: '9999', label: 'Vàng 9999', multiplier: 1 },
-  { value: 'Nhan18K', label: 'Nhẫn Vàng 18K', multiplier: 0.75 },
-  { value: 'Nhan14K', label: 'Nhẫn Vàng 14K', multiplier: 0.585 },
-  { value: 'KimCuongVang', label: 'Kim Cương Vàng', multiplier: 1 },
-  { value: 'BachKim950', label: 'Bạch Kim 950', multiplier: 0.5 },
-  { value: 'Khac', label: 'Khác', multiplier: 1 },
+  { value: '999', label: 'Vàng 999 (24K)', multiplier: 1 }
 ]
 
 export const USD_VND_RATE = 25400
