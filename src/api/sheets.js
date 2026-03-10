@@ -20,9 +20,11 @@ function normalizeTransaction(row) {
 
 /**
  * GET: fetch all transactions from Google Sheet (qua proxy)
+ * @param {string} sheet - Tên sheet (tab) trong Google Sheet, e.g. 'Vàng Con', 'Vàng Mẹ'
  */
-export async function getTransactions() {
-  const res = await fetch(SHEETS_API_BASE)
+export async function getTransactions(sheet) {
+  const url = sheet ? `${SHEETS_API_BASE}?sheet=${encodeURIComponent(sheet)}` : SHEETS_API_BASE
+  const res = await fetch(url, { redirect: 'follow' })
   if (!res.ok) throw new Error(`API ${res.status}`)
   const data = await res.json()
   const list = Array.isArray(data) ? data : []
@@ -31,20 +33,24 @@ export async function getTransactions() {
 
 /**
  * POST: add one transaction
+ * @param {object} tx - Transaction data
+ * @param {string} sheet - Tên sheet (tab)
  */
-export async function addTransaction(tx) {
+export async function addTransaction(tx, sheet) {
+  const body = {
+    id: tx.id,
+    type: tx.type,
+    goldType: tx.goldType,
+    quantity: tx.quantity,
+    pricePerChi: tx.pricePerChi,
+    date: tx.date,
+    note: tx.note || '',
+  }
+  if (sheet) body.sheet = sheet
   const res = await fetch(SHEETS_API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      id: tx.id,
-      type: tx.type,
-      goldType: tx.goldType,
-      quantity: tx.quantity,
-      pricePerChi: tx.pricePerChi,
-      date: tx.date,
-      note: tx.note || '',
-    }),
+    body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`API ${res.status}`)
   const data = await res.json().catch(() => ({}))
@@ -53,12 +59,16 @@ export async function addTransaction(tx) {
 
 /**
  * POST: delete one transaction by id
+ * @param {string} id
+ * @param {string} sheet - Tên sheet (tab)
  */
-export async function deleteTransaction(id) {
+export async function deleteTransaction(id, sheet) {
+  const body = { action: 'delete', id }
+  if (sheet) body.sheet = sheet
   const res = await fetch(SHEETS_API_BASE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'delete', id }),
+    body: JSON.stringify(body),
   })
   if (!res.ok) throw new Error(`API ${res.status}`)
   const data = await res.json().catch(() => ({}))

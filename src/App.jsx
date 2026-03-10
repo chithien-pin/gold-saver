@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { TransactionProvider } from './context/TransactionContext'
+import { TransactionProvider, useTransactions } from './context/TransactionContext'
+import { SHEET_TABS } from './constants'
 import Dashboard from './components/Dashboard'
 import AddTransaction from './components/AddTransaction'
 import TransactionHistory from './components/TransactionHistory'
@@ -42,6 +43,7 @@ function HistoryIcon({ className }) {
 function AppContent() {
   const [active, setActive] = useState('dashboard')
   const [navOpen, setNavOpen] = useState(false)
+  const { currentSheet, setCurrentSheet } = useTransactions()
 
   const renderSection = () => {
     switch (active) {
@@ -116,10 +118,27 @@ function AppContent() {
 
         {/* Main content */}
         <main className="flex-1 flex flex-col min-h-0">
-          <header className="flex-shrink-0 flex items-center justify-between gap-4 px-4 md:px-6 lg:px-8 py-4 md:py-5 border-b border-gray-100">
+          <header className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 md:px-6 lg:px-8 py-4 md:py-5 border-b border-gray-100">
             <div>
               <h1 className="text-lg font-semibold text-gray-900">{greeting}</h1>
               <p className="text-sm text-gray-500 mt-0.5">{today}</p>
+            </div>
+            {/* Tab Vàng Con / Vàng Mẹ */}
+            <div className="flex rounded-xl bg-gray-100 p-1 w-fit">
+              {SHEET_TABS.map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setCurrentSheet(tab)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentSheet === tab
+                      ? 'bg-white text-primary shadow-soft'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
             </div>
           </header>
           <div className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">

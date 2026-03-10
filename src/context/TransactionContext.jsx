@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import { DEFAULT_SHEET } from '../constants'
 import * as sheetsApi from '../api/sheets'
 
 const initialState = []
@@ -20,6 +21,7 @@ function transactionReducer(state, action) {
 const TransactionContext = createContext(null)
 
 export function TransactionProvider({ children }) {
+  const [currentSheet, setCurrentSheet] = React.useState(DEFAULT_SHEET)
   const [transactions, dispatch] = useReducer(transactionReducer, initialState)
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState(null)
@@ -28,7 +30,7 @@ export function TransactionProvider({ children }) {
     setLoading(true)
     setError(null)
     try {
-      const list = await sheetsApi.getTransactions()
+      const list = await sheetsApi.getTransactions(currentSheet)
       dispatch({ type: 'SET', payload: list })
     } catch (e) {
       setError(e.message)
@@ -36,7 +38,7 @@ export function TransactionProvider({ children }) {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [currentSheet])
 
   useEffect(() => {
     loadTransactions()
@@ -47,20 +49,22 @@ export function TransactionProvider({ children }) {
       ...payload,
       id: payload.id || uuidv4(),
     }
-    await sheetsApi.addTransaction(tx)
+    await sheetsApi.addTransaction(tx, currentSheet)
     dispatch({ type: 'ADD', payload: tx })
     return tx
-  }, [])
+  }, [currentSheet])
 
   const deleteTransaction = useCallback(async (id) => {
-    await sheetsApi.deleteTransaction(id)
+    await sheetsApi.deleteTransaction(id, currentSheet)
     dispatch({ type: 'DELETE', payload: { id } })
-  }, [])
+  }, [currentSheet])
 
   const value = {
     transactions,
     loading,
     error,
+    currentSheet,
+    setCurrentSheet,
     addTransaction,
     deleteTransaction,
     refresh: loadTransactions,

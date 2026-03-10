@@ -2,16 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const SHEETS_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbzPWngdu72Q2Ge2xHRNZUmQlszrc3smRI0qEeiti7FqCNGt9ibsaqpTgTGiB7QvFgLj3g/exec'
+  'https://script.google.com/macros/s/AKfycbweCyrU5njzy38octPH8a7QvIR8h3UrKcY21KPz7k_RyaAQqM0SXEJDFzoHtANUykCy3w/exec'
+const SHEETS_PATH = new URL(SHEETS_SCRIPT_URL).pathname
 
 export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
       '/api/sheets': {
-        target: SHEETS_SCRIPT_URL,
+        target: 'https://script.google.com',
         changeOrigin: true,
-        rewrite: (path) => new URL(SHEETS_SCRIPT_URL).pathname,
+        // Đơn giản: chỉ map đường dẫn, giữ nguyên query (?sheet=GoldMom)
+        rewrite: (path) => path.replace(/^\/api\/sheets/, SHEETS_PATH),
       },
     },
   },
