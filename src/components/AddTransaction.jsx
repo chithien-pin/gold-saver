@@ -3,7 +3,7 @@ import { useTransactions } from '../context/TransactionContext'
 import { GOLD_TYPES } from '../constants'
 
 const initialForm = {
-  goldType: 'SJC',
+  goldType: '999',
   type: 'buy',
   quantity: '',
   pricePerChi: '',

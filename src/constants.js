@@ -1,7 +1,7 @@
 /** Gold type options for forms and display */
 export const GOLD_TYPES = [
+  { value: '999', label: 'Vàng 999 (24K)', multiplier: 1 },
   { value: 'SJC', label: 'SJC', multiplier: 1.08 },
-  { value: '999', label: 'Vàng 999 (24K)', multiplier: 1 }
 ]
 
 export const USD_VND_RATE = 25400
