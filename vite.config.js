@@ -19,6 +19,7 @@ export default defineConfig({
       '/api/gold-rates': {
         target: 'https://baotinmanhhai.vn',
         changeOrigin: true,
+        secure: false,
         rewrite: (path) => path.replace(/^\/api\/gold-rates/, GOLD_GRAPHQL_PATH),
       },
     },
