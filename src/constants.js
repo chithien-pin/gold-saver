@@ -6,9 +6,9 @@ export const GOLD_TYPES = [
 
 export const USD_VND_RATE = 25400
 export const CHI_PER_OZ = 3.75 / 31.1 // 1 chỉ = 3.75g, 1 troy oz = 31.1g
-/** Mihong API: trả về giá VNĐ/chỉ, dùng trực tiếp */
-export const MIHONG_API_BASE = 'https://api.mihong.vn/v1/gold-prices'
-export const MIHONG_GOLD_CODES = ['SJC', '999']
+/** Bảo Tín Mạnh Hải GraphQL API: trả về giá VNĐ theo từng sản phẩm */
+export const GOLD_RATE_API_URL = 'https://baotinmanhhai.vn/api/graphql'
+export const GOLD_RATE_CODES = ['SJC', '999']
 export const STORAGE_KEY = 'gold_transactions'
 
 /** Tên tab/sheet trong Google Sheet để chuyển đổi */

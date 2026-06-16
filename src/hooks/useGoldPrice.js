@@ -1,45 +1,47 @@
 import { useState, useEffect, useCallback } from 'react'
-import { MIHONG_API_BASE, MIHONG_GOLD_CODES, PRICE_REFRESH_INTERVAL_MS } from '../constants'
+import { GOLD_RATE_API_URL, GOLD_RATE_CODES, PRICE_REFRESH_INTERVAL_MS } from '../constants'
 
-const MIHONG_HEADERS = {
-  Referer: 'https://www.mihong.vn/',
-  'Content-Type': 'application/json',
-  'x-market': 'mihong',
-  'User-Agent':
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36 Edg/145.0.0.0',
+const GOLD_RATES_QUERY = `
+  query GetGoldRates {
+    goldRates {
+      items {
+        code
+        name
+        buy_price
+        sell_price
+        last_updated
+      }
+    }
+  }
+`
+
+function parsePrice(value) {
+  if (value == null) return null
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  const digitsOnly = String(value).replace(/[^\d.-]/g, '')
+  const num = Number(digitsOnly)
+  return Number.isFinite(num) ? num : null
 }
 
-/** API Mihong trả về giá theo chỉ (VNĐ/chỉ) — dùng trực tiếp, không chia 10 */
-function parseLatestPricesPerChi(data) {
-  if (!Array.isArray(data) || data.length === 0) return { buy: null, sell: null }
-  const latest = data[data.length - 1]
-  return {
-    buy: latest?.buyingPrice ?? null,
-    sell: latest?.sellingPrice ?? null,
-  }
+function parseLastUpdated(value) {
+  if (!value) return null
+  const dt = new Date(value)
+  return Number.isNaN(dt.getTime()) ? null : dt
 }
 
-function parseLatestDateTime(data) {
-  if (!Array.isArray(data) || data.length === 0) return null
-  const latest = data[data.length - 1]
-  const dt = latest?.dateTime
-  if (!dt) return null
-  const [d, t] = String(dt).trim().split(/\s+/)
-  const [day, month, year] = (d || '').split('/')
-  let hour = 0
-  let minute = 0
-  if (t) {
-    const [h, m] = t.split(':')
-    if (h != null) hour = parseInt(h, 10) || 0
-    if (m != null) minute = parseInt(m, 10) || 0
-  }
-  if (day && month && year) return new Date(+year, +month - 1, +day, hour, minute, 0)
-  return new Date()
+function normalizeCode(item) {
+  const rawCode = String(item?.code || '').trim().toUpperCase()
+  const rawName = String(item?.name || '').trim().toUpperCase()
+  if (rawCode.includes('SJC') || rawName.includes('SJC')) return 'SJC'
+  if (rawCode === '999' || rawCode === '9999') return '999'
+  if (rawName.includes('999')) return '999'
+  return rawCode
 }
 
 export function useGoldPrice() {
   const [pricesByCode, setPricesByCode] = useState({})
   const [pricesByCodeSell, setPricesByCodeSell] = useState({})
+  const [rateItems, setRateItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
@@ -49,26 +51,50 @@ export function useGoldPrice() {
     setError(null)
     const nextBuy = {}
     const nextSell = {}
+    const nextItems = []
     let latestDate = null
     try {
-      for (const code of MIHONG_GOLD_CODES) {
-        const url = `${MIHONG_API_BASE}?market=domestic&goldCode=${encodeURIComponent(code)}&last=24h`
-        const res = await fetch(url, { headers: MIHONG_HEADERS })
-        if (!res.ok) throw new Error(`Mihong API ${res.status}`)
-        const data = await res.json()
-        if (data?.success === false) throw new Error(data?.messages?.[0] || 'API error')
-        const arr = Array.isArray(data) ? data : data?.data
-        const { buy, sell } = parseLatestPricesPerChi(arr)
-        if (buy != null) nextBuy[code] = buy
-        if (sell != null) nextSell[code] = sell
-        const dt = parseLatestDateTime(arr)
+      const res = await fetch(GOLD_RATE_API_URL, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/graphql-response+json, application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: GOLD_RATES_QUERY,
+          operationName: 'GetGoldRates',
+        }),
+      })
+      if (!res.ok) throw new Error(`Gold API ${res.status}`)
+      const payload = await res.json()
+      if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
+        throw new Error(payload.errors[0]?.message || 'GraphQL error')
+      }
+      const items = Array.isArray(payload?.data?.goldRates?.items) ? payload.data.goldRates.items : []
+
+      for (const item of items) {
+        const mappedCode = normalizeCode(item)
+        if (!GOLD_RATE_CODES.includes(mappedCode)) continue
+        const buy = parsePrice(item?.buy_price)
+        const sell = parsePrice(item?.sell_price)
+        nextItems.push({
+          code: mappedCode,
+          name: String(item?.name || mappedCode),
+          buyPrice: buy,
+          sellPrice: sell,
+        })
+        if (buy != null) nextBuy[mappedCode] = buy
+        if (sell != null) nextSell[mappedCode] = sell
+        const dt = parseLastUpdated(item?.last_updated)
         if (dt && (!latestDate || dt > latestDate)) latestDate = dt
       }
       setPricesByCode(nextBuy)
       setPricesByCodeSell(nextSell)
+      setRateItems(nextItems)
       setLastUpdated(latestDate || new Date())
     } catch (e) {
       setError(e.message)
+      setRateItems([])
       setLastUpdated(new Date())
     } finally {
       setLoading(false)
@@ -87,6 +113,7 @@ export function useGoldPrice() {
     spotVndPerChi,
     pricesByCode,
     pricesByCodeSell,
+    rateItems,
     loading,
     error,
     lastUpdated,

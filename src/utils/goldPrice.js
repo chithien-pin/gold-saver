@@ -2,10 +2,10 @@ import { getMultiplierForGoldType } from '../constants'
 
 /**
  * Get current price per chỉ in VNĐ for a gold type.
- * Prefer Mihong prices when available (pricesByCode), else use spot base × multiplier.
+ * Prefer live API prices when available (pricesByCode), else use spot base × multiplier.
  * @param {number} spotVndPerChi - base price (e.g. 999 from API)
  * @param {string} goldType - e.g. 'SJC', '999', 'Nhan18K'
- * @param {{ SJC?: number, '999'?: number }} [pricesByCode] - optional map from Mihong API (price per chỉ)
+ * @param {{ SJC?: number, '999'?: number }} [pricesByCode] - optional map from gold-rate API (price per chỉ)
  */
 export function getPricePerChiForType(spotVndPerChi, goldType, pricesByCode = null) {
   if (pricesByCode) {
@@ -19,7 +19,7 @@ export function getPricePerChiForType(spotVndPerChi, goldType, pricesByCode = nu
 
 /**
  * Get current sell price per chỉ in VNĐ for a gold type.
- * Uses pricesByCodeSell from Mihong when available, else fallback to spot × multiplier.
+ * Uses pricesByCodeSell from gold-rate API when available, else fallback to spot × multiplier.
  */
 export function getSellPricePerChiForType(spotVndPerChi, goldType, pricesByCodeSell = null) {
   if (pricesByCodeSell) {

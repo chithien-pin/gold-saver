@@ -1,8 +1,7 @@
 import { useTransactions } from '../context/TransactionContext'
 import { useGoldPrice } from '../hooks/useGoldPrice'
 import { computePortfolioByType, computePortfolioTotals } from '../utils/pl'
-import { GOLD_TYPES, getLabelForGoldType } from '../constants'
-import { getPricePerChiForType, getSellPricePerChiForType } from '../utils/goldPrice'
+import { getLabelForGoldType } from '../constants'
 import { formatVND, formatNumber, formatPercent } from '../utils/format'
 
 function SectionIcon({ children, className = '' }) {
@@ -15,7 +14,7 @@ function SectionIcon({ children, className = '' }) {
 
 export default function Dashboard() {
   const { transactions, loading: transactionsLoading, error: transactionsError, refresh: refreshTransactions } = useTransactions()
-  const { spotVndPerChi, pricesByCode, pricesByCodeSell, loading, lastUpdated, refresh } = useGoldPrice()
+  const { spotVndPerChi, pricesByCode, rateItems, loading, lastUpdated, refresh } = useGoldPrice()
   const byType = spotVndPerChi != null ? computePortfolioByType(transactions, spotVndPerChi, pricesByCode) : []
   const totals = computePortfolioTotals(byType)
 
@@ -46,7 +45,7 @@ export default function Dashboard() {
               </svg>
             </SectionIcon>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Giá vàng (Mihong)</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Giá vàng (BTMH)</h2>
               <p className="text-sm text-gray-500 mt-0.5">
                 Cập nhật lúc: {lastUpdated ? lastUpdated.toLocaleTimeString('vi-VN') + ' ' + lastUpdated.toLocaleDateString('vi-VN') : '—'}
               </p>
@@ -69,12 +68,12 @@ export default function Dashboard() {
           <div className="mt-6 h-12 flex items-center text-gray-500 text-sm">Đang tải giá...</div>
         ) : (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {GOLD_TYPES.map((t) => {
-              const priceBuy = getPricePerChiForType(spotVndPerChi, t.value, pricesByCode) ?? 0
-              const priceSell = getSellPricePerChiForType(spotVndPerChi, t.value, pricesByCodeSell) ?? 0
+            {(rateItems.length > 0 ? rateItems : []).map((item) => {
+              const priceBuy = item.buyPrice ?? 0
+              const priceSell = item.sellPrice ?? 0
               return (
-                <div key={t.value} className="rounded-xl bg-surface py-3 px-4">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider">{t.label} / chỉ</p>
+                <div key={`${item.code}-${item.name}`} className="rounded-xl bg-surface py-3 px-4">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider">{item.name} / chỉ</p>
                   <div className="mt-1 space-y-0.5">
                     <p className="text-sm">
                       <span className="text-gray-500">Mua: </span>
@@ -89,6 +88,11 @@ export default function Dashboard() {
                 </div>
               )
             })}
+            {!loading && rateItems.length === 0 && (
+              <div className="col-span-full rounded-xl bg-surface py-3 px-4 text-sm text-gray-500">
+                Không có dữ liệu giá vàng từ API.
+              </div>
+            )}
           </div>
         )}
       </section>
