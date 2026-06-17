@@ -4,9 +4,10 @@ import { getPricePerChiForType } from './goldPrice'
  * Group transactions by goldType and compute net qty, cost basis, current value, P&L
  * @param {Array<{ goldType: string, type: 'buy'|'sell', quantity: number, pricePerChi: number }>} transactions
  * @param {number} spotVndPerChi - current spot price VNĐ per chỉ (base, e.g. 999)
- * @param {{ SJC?: number, '999'?: number }} [pricesByCode] - optional Mihong prices per chỉ
+ * @param {Record<string, number>} [pricesByCode] - optional live prices per chỉ
+ * @param {number|null} [comparePricePerChi] - optional fixed compare price for P/L
  */
-export function computePortfolioByType(transactions, spotVndPerChi, pricesByCode = null) {
+export function computePortfolioByType(transactions, spotVndPerChi, pricesByCode = null, comparePricePerChi = null) {
   const byType = {}
 
   for (const tx of transactions) {
@@ -32,7 +33,7 @@ export function computePortfolioByType(transactions, spotVndPerChi, pricesByCode
   for (const [goldType, row] of Object.entries(byType)) {
     const netQty = row.buyQty - row.sellQty
     const avgCost = row.buyQty > 0 ? row.totalBuyCost / row.buyQty : 0
-    const currentPricePerChi = getPricePerChiForType(spotVndPerChi, goldType, pricesByCode)
+    const currentPricePerChi = comparePricePerChi ?? getPricePerChiForType(spotVndPerChi, goldType, pricesByCode)
     const currentValue = netQty * currentPricePerChi
     const costBasis = netQty * avgCost
     const plVnd = currentValue - costBasis

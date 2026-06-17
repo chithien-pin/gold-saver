@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTransactions } from '../context/TransactionContext'
 import { GOLD_TYPES } from '../constants'
+import { useGoldPrice } from '../hooks/useGoldPrice'
 
 const initialForm = {
-  goldType: '999',
+  goldType: '',
   type: 'buy',
   quantity: '',
   pricePerChi: '',
@@ -13,10 +14,40 @@ const initialForm = {
 
 export default function AddTransaction() {
   const { addTransaction } = useTransactions()
+  const { rateItems } = useGoldPrice()
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [apiError, setApiError] = useState(null)
+
+  const goldTypeOptions = useMemo(() => {
+    if (Array.isArray(rateItems) && rateItems.length > 0) {
+      const mapped = rateItems
+        .map((item) => {
+          const code = String(item?.code || '').trim()
+          const name = String(item?.name || '').trim()
+          const value = code || name
+          if (!value) return null
+          return {
+            value,
+            label: name || code,
+          }
+        })
+        .filter(Boolean)
+      const unique = new Map()
+      for (const item of mapped) {
+        if (!unique.has(item.value)) unique.set(item.value, item)
+      }
+      return Array.from(unique.values())
+    }
+    return GOLD_TYPES.map((t) => ({ value: t.value, label: t.label }))
+  }, [rateItems])
+
+  useEffect(() => {
+    if (!form.goldType && goldTypeOptions.length > 0) {
+      setForm((prev) => ({ ...prev, goldType: goldTypeOptions[0].value }))
+    }
+  }, [form.goldType, goldTypeOptions])
 
   function validate() {
     const e = {}
@@ -56,7 +87,11 @@ export default function AddTransaction() {
         date: form.date,
         note: form.note.trim() || undefined,
       })
-      setForm({ ...initialForm, date: new Date().toISOString().slice(0, 10) })
+      setForm({
+        ...initialForm,
+        goldType: goldTypeOptions[0]?.value || '',
+        date: new Date().toISOString().slice(0, 10),
+      })
       setErrors({})
     } catch (err) {
       setApiError(err.message || 'Không thể lưu. Kiểm tra kết nối hoặc quyền Sheet.')
@@ -89,7 +124,7 @@ export default function AddTransaction() {
               onChange={(e) => handleChange('goldType', e.target.value)}
               className="w-full rounded-xl bg-surface border border-gray-200 text-gray-900 px-4 py-2.5 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition"
             >
-              {GOLD_TYPES.map((t) => (
+              {goldTypeOptions.map((t) => (
                 <option key={t.value} value={t.value}>
                   {t.label}
                 </option>

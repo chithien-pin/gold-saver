@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { GOLD_RATE_API_URL, GOLD_RATE_CODES, PRICE_REFRESH_INTERVAL_MS } from '../constants'
+import { GOLD_RATE_API_URL, PRICE_REFRESH_INTERVAL_MS } from '../constants'
+import { readGoldRateItemsCache, writeGoldRateItemsCache } from '../utils/goldRateCache'
+import { processGoldRateItems } from '../utils/goldPrice'
 
 const GOLD_RATES_QUERY = `
   query GetGoldRates {
@@ -15,33 +17,28 @@ const GOLD_RATES_QUERY = `
   }
 `
 
-function parsePrice(value) {
-  if (value == null) return null
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null
-  const digitsOnly = String(value).replace(/[^\d.-]/g, '')
-  const num = Number(digitsOnly)
-  return Number.isFinite(num) ? num : null
-}
-
 function parseLastUpdated(value) {
   if (!value) return null
   const dt = new Date(value)
   return Number.isNaN(dt.getTime()) ? null : dt
 }
 
-function normalizeCode(item) {
-  const rawCode = String(item?.code || '').trim().toUpperCase()
-  const rawName = String(item?.name || '').trim().toUpperCase()
-  if (rawCode.includes('SJC') || rawName.includes('SJC')) return 'SJC'
-  if (rawCode === '999' || rawCode === '9999') return '999'
-  if (rawName.includes('999')) return '999'
-  return rawCode
+function processCachedItems(items) {
+  return processGoldRateItems(
+    (Array.isArray(items) ? items : []).map((item) => ({
+      code: item?.code,
+      name: item?.name,
+      buy_price: item?.buyPrice,
+      sell_price: item?.sellPrice,
+    }))
+  )
 }
 
 export function useGoldPrice() {
-  const [pricesByCode, setPricesByCode] = useState({})
-  const [pricesByCodeSell, setPricesByCodeSell] = useState({})
-  const [rateItems, setRateItems] = useState([])
+  const initialCache = processCachedItems(readGoldRateItemsCache())
+  const [pricesByCode, setPricesByCode] = useState(initialCache.pricesByCode)
+  const [pricesByCodeSell, setPricesByCodeSell] = useState(initialCache.pricesByCodeSell)
+  const [rateItems, setRateItems] = useState(initialCache.rateItems)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
@@ -49,9 +46,6 @@ export function useGoldPrice() {
   const fetchPrice = useCallback(async () => {
     setLoading(true)
     setError(null)
-    const nextBuy = {}
-    const nextSell = {}
-    const nextItems = []
     let latestDate = null
     try {
       const res = await fetch(GOLD_RATE_API_URL, {
@@ -70,31 +64,25 @@ export function useGoldPrice() {
       if (Array.isArray(payload?.errors) && payload.errors.length > 0) {
         throw new Error(payload.errors[0]?.message || 'GraphQL error')
       }
-      const items = Array.isArray(payload?.data?.goldRates?.items) ? payload.data.goldRates.items : []
+      const rawItems = Array.isArray(payload?.data?.goldRates?.items) ? payload.data.goldRates.items : []
+      const { rateItems: nextItems, pricesByCode: nextBuy, pricesByCodeSell: nextSell } = processGoldRateItems(rawItems)
 
-      for (const item of items) {
-        const mappedCode = normalizeCode(item)
-        if (!GOLD_RATE_CODES.includes(mappedCode)) continue
-        const buy = parsePrice(item?.buy_price)
-        const sell = parsePrice(item?.sell_price)
-        nextItems.push({
-          code: mappedCode,
-          name: String(item?.name || mappedCode),
-          buyPrice: buy,
-          sellPrice: sell,
-        })
-        if (buy != null) nextBuy[mappedCode] = buy
-        if (sell != null) nextSell[mappedCode] = sell
+      for (const item of rawItems) {
         const dt = parseLastUpdated(item?.last_updated)
         if (dt && (!latestDate || dt > latestDate)) latestDate = dt
       }
+
       setPricesByCode(nextBuy)
       setPricesByCodeSell(nextSell)
       setRateItems(nextItems)
+      writeGoldRateItemsCache(nextItems)
       setLastUpdated(latestDate || new Date())
     } catch (e) {
       setError(e.message)
-      setRateItems([])
+      const cached = processCachedItems(readGoldRateItemsCache())
+      setPricesByCode(cached.pricesByCode)
+      setPricesByCodeSell(cached.pricesByCodeSell)
+      setRateItems(cached.rateItems)
       setLastUpdated(new Date())
     } finally {
       setLoading(false)

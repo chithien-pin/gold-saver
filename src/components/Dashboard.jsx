@@ -2,6 +2,7 @@ import { useTransactions } from '../context/TransactionContext'
 import { useGoldPrice } from '../hooks/useGoldPrice'
 import { computePortfolioByType, computePortfolioTotals } from '../utils/pl'
 import { getLabelForGoldType } from '../constants'
+import { pickTieuKimCatPricePerChi } from '../utils/goldPrice'
 import { formatVND, formatNumber, formatPercent } from '../utils/format'
 
 function SectionIcon({ children, className = '' }) {
@@ -15,7 +16,10 @@ function SectionIcon({ children, className = '' }) {
 export default function Dashboard() {
   const { transactions, loading: transactionsLoading, error: transactionsError, refresh: refreshTransactions } = useTransactions()
   const { spotVndPerChi, pricesByCode, rateItems, loading, lastUpdated, refresh } = useGoldPrice()
-  const byType = spotVndPerChi != null ? computePortfolioByType(transactions, spotVndPerChi, pricesByCode) : []
+  const tieuKimCatPrice = pickTieuKimCatPricePerChi(rateItems)
+  const byType = spotVndPerChi != null
+    ? computePortfolioByType(transactions, spotVndPerChi, pricesByCode, tieuKimCatPrice)
+    : []
   const totals = computePortfolioTotals(byType)
 
   const handleRefresh = () => refresh()
