@@ -83,7 +83,8 @@ export function pickTieuKimCatPricePerChi(rateItems) {
     return normalizeRateText(text).includes('tieu kim cat')
   })
   if (!found) return null
-  return found.buyPrice ?? found.sellPrice ?? null
+  // Giá hiện tại / P/L luôn dùng giá mua (shop mua vào), không dùng giá bán
+  return found.buyPrice ?? null
 }
 
 /**

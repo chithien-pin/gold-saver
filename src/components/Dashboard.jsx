@@ -16,10 +16,11 @@ function SectionIcon({ children, className = '' }) {
 export default function Dashboard() {
   const { transactions, loading: transactionsLoading, error: transactionsError, refresh: refreshTransactions } = useTransactions()
   const { spotVndPerChi, pricesByCode, rateItems, loading, lastUpdated, refresh } = useGoldPrice()
-  const tieuKimCatPrice = pickTieuKimCatPricePerChi(rateItems)
-  const byType = spotVndPerChi != null
-    ? computePortfolioByType(transactions, spotVndPerChi, pricesByCode, tieuKimCatPrice)
-    : []
+  const tieuKimCatBuyPrice = pickTieuKimCatPricePerChi(rateItems)
+  const byType =
+    spotVndPerChi != null || tieuKimCatBuyPrice != null
+      ? computePortfolioByType(transactions, spotVndPerChi, pricesByCode, tieuKimCatBuyPrice)
+      : []
   const totals = computePortfolioTotals(byType)
 
   const handleRefresh = () => refresh()

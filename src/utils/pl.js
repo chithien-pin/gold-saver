@@ -5,7 +5,7 @@ import { getPricePerChiForType } from './goldPrice'
  * @param {Array<{ goldType: string, type: 'buy'|'sell', quantity: number, pricePerChi: number }>} transactions
  * @param {number} spotVndPerChi - current spot price VNĐ per chỉ (base, e.g. 999)
  * @param {Record<string, number>} [pricesByCode] - optional live prices per chỉ
- * @param {number|null} [comparePricePerChi] - optional fixed compare price for P/L
+ * @param {number|null} [comparePricePerChi] - giá mua hiện tại (VNĐ/chỉ) để tính giá trị & P/L
  */
 export function computePortfolioByType(transactions, spotVndPerChi, pricesByCode = null, comparePricePerChi = null) {
   const byType = {}
