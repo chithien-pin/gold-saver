@@ -83,7 +83,7 @@ export function pickTieuKimCatPricePerChi(rateItems) {
     return normalizeRateText(text).includes('tieu kim cat')
   })
   if (!found) return null
-  return found.sellPrice ?? found.buyPrice ?? null
+  return found.buyPrice ?? found.sellPrice ?? null
 }
 
 /**
