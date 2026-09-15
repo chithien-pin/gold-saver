@@ -132,7 +132,7 @@ export default function PortfolioCharts({ byType, totals }) {
       </div>
 
       <div className="rounded-card bg-card p-5 shadow-soft">
-        <h2 className="text-lg font-semibold text-foreground">Vốn vs giá trị hiện tại</h2>
+        <h2 className="text-lg font-semibold text-foreground">Vốn với giá trị hiện tại</h2>
         <p className="text-sm text-muted-foreground mt-0.5">So sánh vốn đầu tư và giá trị theo loại</p>
         <div className="mt-4 h-72">
           <ResponsiveContainer width="100%" height="100%">

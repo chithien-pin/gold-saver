@@ -45,8 +45,8 @@ export default {
         'panel': '16px',
       },
       fontFamily: {
-        sans: ['Urbanist', 'system-ui', 'sans-serif'],
-        display: ['Urbanist', 'system-ui', 'sans-serif'],
+        sans: ['Inter', 'Roboto', 'system-ui', 'sans-serif'],
+        display: ['Inter', 'Roboto', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.4s ease-out',
