@@ -62,24 +62,24 @@ function AppContent() {
   const today = new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 
   return (
-    <div className="min-h-screen bg-surface">
-      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row rounded-panel bg-white shadow-soft-lg overflow-hidden min-h-[calc(100vh-3rem)] md:min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-5rem)]">
+    <div className="min-h-screen bg-background p-3 md:p-4 lg:p-6">
+      <div className="max-w-8xl mx-auto flex flex-col lg:flex-row rounded-panel bg-card shadow-soft-lg overflow-hidden min-h-[calc(100vh-3rem)] md:min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-5rem)]">
         {/* Sidebar - InsightHub style */}
-        <aside className="lg:w-60 flex-shrink-0 bg-white lg:border-r border-gray-100">
-          <div className="flex items-center justify-between h-16 lg:h-20 px-4 lg:px-5 border-b border-gray-100">
+        <aside className="lg:w-60 flex-shrink-0 bg-card lg:border-r border-border">
+          <div className="flex items-center justify-between h-16 lg:h-20 px-4 lg:px-5 border-b border-border">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-                <StarIcon className="w-5 h-5 text-white" />
+                <StarIcon className="w-5 h-5 text-primary-foreground" />
               </div>
               <div>
-                <span className="font-semibold text-gray-900 block leading-tight">Gold Saver</span>
-                <span className="text-xs text-gray-500">Dashboard</span>
+                <span className="font-semibold text-foreground block leading-tight">Gold Saver</span>
+                <span className="text-xs text-muted-foreground">Dashboard</span>
               </div>
             </div>
             <button
               type="button"
               onClick={() => setNavOpen((o) => !o)}
-              className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               aria-label="Menu"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -103,8 +103,8 @@ function AppContent() {
                     }}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-colors ${
                       active === s.id
-                        ? 'bg-primary text-white shadow-soft'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-primary text-primary-foreground shadow-soft'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
                     <s.icon className="w-5 h-5 flex-shrink-0" />
@@ -118,13 +118,13 @@ function AppContent() {
 
         {/* Main content */}
         <main className="flex-1 flex flex-col min-h-0">
-          <header className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 md:px-6 lg:px-8 py-4 md:py-5 border-b border-gray-100">
+          <header className="flex-shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 md:px-6 lg:px-8 py-4 md:py-5 border-b border-border">
             <div>
-              <h1 className="text-lg font-semibold text-gray-900">{greeting}</h1>
-              <p className="text-sm text-gray-500 mt-0.5">{today}</p>
+              <h1 className="text-lg font-semibold text-foreground">{greeting}</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">{today}</p>
             </div>
             {/* Tab Vàng Con / Vàng Mẹ */}
-            <div className="flex rounded-xl bg-gray-100 p-1 w-fit">
+            <div className="flex rounded-xl bg-muted p-1 w-fit">
               {SHEET_TABS.map((tab) => (
                 <button
                   key={tab}
@@ -132,8 +132,8 @@ function AppContent() {
                   onClick={() => setCurrentSheet(tab)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentSheet === tab
-                      ? 'bg-white text-primary shadow-soft'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-card text-primary shadow-soft'
+                      : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
                   {tab}

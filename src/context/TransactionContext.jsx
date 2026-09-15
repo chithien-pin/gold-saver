@@ -11,6 +11,8 @@ function transactionReducer(state, action) {
       return action.payload ?? []
     case 'ADD':
       return [action.payload, ...state]
+    case 'UPDATE':
+      return state.map((t) => (t.id === action.payload.id ? { ...t, ...action.payload } : t))
     case 'DELETE':
       return state.filter((t) => t.id !== action.payload.id)
     default:
@@ -54,6 +56,22 @@ export function TransactionProvider({ children }) {
     return tx
   }, [currentSheet])
 
+  const updateTransaction = useCallback(async (payload) => {
+    if (!payload?.id) throw new Error('Thiếu id giao dịch')
+    const tx = {
+      id: payload.id,
+      type: payload.type,
+      goldType: payload.goldType,
+      quantity: payload.quantity,
+      pricePerChi: payload.pricePerChi,
+      date: payload.date,
+      note: payload.note || '',
+    }
+    await sheetsApi.updateTransaction(tx, currentSheet)
+    dispatch({ type: 'UPDATE', payload: tx })
+    return tx
+  }, [currentSheet])
+
   const deleteTransaction = useCallback(async (id) => {
     await sheetsApi.deleteTransaction(id, currentSheet)
     dispatch({ type: 'DELETE', payload: { id } })
@@ -66,6 +84,7 @@ export function TransactionProvider({ children }) {
     currentSheet,
     setCurrentSheet,
     addTransaction,
+    updateTransaction,
     deleteTransaction,
     refresh: loadTransactions,
   }

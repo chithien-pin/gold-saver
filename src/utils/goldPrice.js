@@ -15,6 +15,13 @@ export function isSilverRateItem(item) {
   return text.includes('bac') || text.includes('silver')
 }
 
+/** Chỉ giữ Kim Gia Bảo và Tiểu Kim Cát (bỏ Gift) */
+export function isAllowedGoldRateItem(item) {
+  const text = normalizeRateText(`${item?.name || ''} ${item?.code || ''}`)
+  if (text.includes('gift')) return false
+  return text.includes('kim gia bao') || text.includes('tieu kim cat')
+}
+
 export function parseApiPrice(value) {
   if (value == null) return null
   if (typeof value === 'number') return Number.isFinite(value) ? value : null
@@ -45,7 +52,7 @@ export function processGoldRateItems(rawItems) {
   const nextItems = []
 
   for (const item of Array.isArray(rawItems) ? rawItems : []) {
-    if (isSilverRateItem(item)) continue
+    if (isSilverRateItem(item) || !isAllowedGoldRateItem(item)) continue
 
     const rawCode = String(item?.code || '').trim()
     const rawName = String(item?.name || '').trim()

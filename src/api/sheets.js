@@ -58,6 +58,34 @@ export async function addTransaction(tx, sheet) {
 }
 
 /**
+ * POST: update one transaction by id
+ * @param {object} tx - Transaction data (must include id)
+ * @param {string} sheet - Tên sheet (tab)
+ */
+export async function updateTransaction(tx, sheet) {
+  const body = {
+    action: 'update',
+    id: tx.id,
+    type: tx.type,
+    goldType: tx.goldType,
+    quantity: tx.quantity,
+    pricePerChi: tx.pricePerChi,
+    date: tx.date,
+    note: tx.note || '',
+  }
+  if (sheet) body.sheet = sheet
+  const res = await fetch(SHEETS_API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`API ${res.status}`)
+  const data = await res.json().catch(() => ({}))
+  if (data?.error) throw new Error(data.error)
+  return data
+}
+
+/**
  * POST: delete one transaction by id
  * @param {string} id
  * @param {string} sheet - Tên sheet (tab)

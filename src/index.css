@@ -3,11 +3,35 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --background: #f0f2f9;
+    --foreground: #2d3250;
+    --card: #ffffff;
+    --card-foreground: #2d3250;
+    --muted: #e8eaf6;
+    --muted-foreground: #8b90a8;
+    --primary: #5c67f2;
+    --primary-foreground: #ffffff;
+    --coral: #f4a27e;
+    --coral-soft: #fde8dc;
+    --lavender: #c3c7f9;
+    --lavender-soft: #eef0ff;
+    --accent: #eef0ff;
+    --accent-foreground: #3d4494;
+    --border: #e4e7f4;
+    --destructive: #e57373;
+    --success: #5bb98c;
+    --shadow: 0 10px 40px rgba(92, 103, 242, 0.08), 0 2px 8px rgba(45, 50, 80, 0.04);
+  }
+
   html {
     @apply antialiased;
   }
+
   body {
-    @apply bg-surface text-gray-900 font-sans min-h-screen;
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply font-sans min-h-screen;
   }
 }
 
@@ -16,11 +40,12 @@
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100;
+  background-color: var(--muted);
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full;
+  background-color: var(--lavender);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/50;
+  background-color: rgba(92, 103, 242, 0.5);
 }

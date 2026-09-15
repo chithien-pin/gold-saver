@@ -18,7 +18,7 @@ export const PRICE_REFRESH_INTERVAL_MS = 60000
 
 /** Google Apps Script Web App URL (read/write Google Sheet) */
 export const SHEETS_API_URL =
-  'https://script.google.com/macros/s/AKfycbweCyrU5njzy38octPH8a7QvIR8h3UrKcY21KPz7k_RyaAQqM0SXEJDFzoHtANUykCy3w/exec'
+  'https://script.google.com/macros/s/AKfycbxfBs22bi-JueYnz-uifHfmgkZ-AwxowtCelQYw-Nw-05zxJwNa1jc4M6dfKcEh5N5oGg/exec'
 
 export function getMultiplierForGoldType(goldType) {
   const found = GOLD_TYPES.find((t) => t.value === goldType)

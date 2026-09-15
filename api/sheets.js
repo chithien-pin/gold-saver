@@ -1,5 +1,5 @@
 const SHEETS_URL_BASE =
-  'https://script.google.com/macros/s/AKfycbweCyrU5njzy38octPH8a7QvIR8h3UrKcY21KPz7k_RyaAQqM0SXEJDFzoHtANUykCy3w/exec'
+  'https://script.google.com/macros/s/AKfycbxfBs22bi-JueYnz-uifHfmgkZ-AwxowtCelQYw-Nw-05zxJwNa1jc4M6dfKcEh5N5oGg/exec'
 const API_VERSION = '1'
 
 function buildSheetsUrl(extraParams = '') {
